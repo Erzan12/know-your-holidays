@@ -2,7 +2,7 @@
   "expo": {
     "name": "Know Your Holidays",
     "slug": "know-your-holidays",
-    "version": "1.0.0",
+    "version": "1.0.3",
     "orientation": "portrait",
     "icon": "./assets/know-your-holidays-app-icon.png",
     "userInterfaceStyle": "light",
@@ -11,10 +11,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "backgroundColor": "#E6F4FE"
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.erzan.knowyourholidays"
