@@ -1,72 +1,107 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { colors, fonts, spacing } from '../theme/theme';
 
-const MONTHS_SHORT = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+export type WeekendStrategy = {
+  type: '3_DAY' | 'BRIDGE_DAY';
+  text: string;
+};
 
-export function HolidayCard({
-  date, name, localName, type,
-}: { date: string; name: string; localName?: string | null; type?: string | null }) {
-  const d = new Date(date);
-  const isSpecial = type?.toLowerCase().includes('optional') || type?.toLowerCase().includes('bank');
-  const accent = isSpecial ? colors.ember : colors.forest;
-  const accentSoft = isSpecial ? colors.emberSoft : colors.forestSoft;
+interface HolidayCardProps {
+  date: string;
+  name: string;
+  localName: string;
+  type: string;
+  strategy?: WeekendStrategy;
+}
+
+export function HolidayCard({ date, name, localName,type, strategy }: HolidayCardProps) {
+  // Format standard human readable date string (e.g., "Mon, Aug 24")
+  const formattedDate = new Date(date).toLocaleDateString('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+  });
 
   return (
-    <View style={styles.row}>
-      <View style={[styles.tab, { backgroundColor: accentSoft }]}>
-        <Text style={[styles.day, { color: accent }]}>{d.getDate()}</Text>
-        <Text style={[styles.month, { color: accent }]}>{MONTHS_SHORT[d.getMonth()]}</Text>
+    <View style={styles.card}>
+      <View style={styles.textContainer}>
+        <Text style={styles.dateText}>{formattedDate}</Text>
+        <Text style={styles.nameText}>{name}</Text>
+        {localName !== name && <Text style={styles.localNameText}>{localName}</Text>}
       </View>
 
-      <View style={styles.perforation}>
-        {Array.from({ length: 10 }).map((_, i) => (
-          <View key={i} style={styles.dash} />
-        ))}
-      </View>
-
-      <View style={styles.content}>
-        <Text style={styles.name}>{name}</Text>
-        {!!localName && localName !== name && (
-          <Text style={styles.local}>{localName}</Text>
-        )}
-        {!!type && <Text style={styles.type}>{type}</Text>}
-      </View>
+      {/* Dynamic Visualizer Badge Placement */}
+      {strategy && (
+        <View style={[
+          styles.badge, 
+          strategy.type === '3_DAY' ? styles.badgeForest : styles.badgeEmber
+        ]}>
+          <Text style={[
+            styles.badgeText, 
+            strategy.type === '3_DAY' ? styles.textForest : styles.textEmber
+          ]}>
+            {strategy.text}
+          </Text>
+        </View>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
+  card: {
     backgroundColor: colors.white,
-    borderRadius: 14,
-    marginBottom: spacing.sm,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 2,
-  },
-  tab: {
-    width: 64,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: spacing.md,
-  },
-  day: { fontFamily: fonts.display, fontSize: 26, lineHeight: 28 },
-  month: { fontFamily: fonts.mono, fontSize: 11, letterSpacing: 1, marginTop: 2 },
-  perforation: {
-    justifyContent: 'space-evenly',
-    paddingVertical: spacing.md,
-  },
-  dash: { width: 1, height: 4, backgroundColor: colors.paperDim },
-  content: {
-    flex: 1,
+    borderRadius: 12,
     padding: spacing.md,
-    justifyContent: 'center',
+    marginBottom: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.paperDim,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  name: { fontFamily: fonts.bodyBold, fontSize: 15, color: colors.ink },
-  local: { fontFamily: fonts.body, fontSize: 12, color: colors.mute, marginTop: 2 },
-  type: { fontFamily: fonts.mono, fontSize: 10, color: colors.mute, marginTop: 6, textTransform: 'uppercase' },
+  textContainer: {
+    flex: 1,
+    marginRight: spacing.sm,
+  },
+  dateText: {
+    fontFamily: fonts.mono,
+    fontSize: 12,
+    color: colors.mute,
+    marginBottom: 2,
+  },
+  nameText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 16,
+    color: colors.ink,
+  },
+  localNameText: {
+    fontFamily: fonts.body,
+    fontSize: 13,
+    color: colors.mute,
+    marginTop: 2,
+  },
+  badge: {
+    paddingHorizontal: spacing.sm * 1.5,
+    paddingVertical: spacing.xs * 1.5,
+    borderRadius: 8,
+    maxWidth: '40%',
+  },
+  badgeForest: {
+    backgroundColor: colors.forestSoft,
+  },
+  badgeEmber: {
+    backgroundColor: colors.emberSoft,
+  },
+  badgeText: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 11,
+    textAlign: 'center',
+  },
+  textForest: {
+    color: colors.forest,
+  },
+  textEmber: {
+    color: colors.ember,
+  },
 });
