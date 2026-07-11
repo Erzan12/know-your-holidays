@@ -1,14 +1,8 @@
+import { Holiday } from '../types/holidays.interface';
 import { api } from './client';
 
-export interface Holiday {
-    id: string;
-    country: string;
-    date: string;
-    name: string;
-    localName: string;
-    type: string | null;
-    year: number;
-}
+// const API_BASE_URL = 'http://10.10.1.159:3002'
+const API_BASE_URL = 'https://know-your-holidays-api.onrender.com'
 
 export const getHolidays = async (country: string, year: number) => {
     const { data } = await api.get<Holiday[]>('/holidays', {
@@ -16,3 +10,9 @@ export const getHolidays = async (country: string, year: number) => {
     });
     return data;
 };
+
+export async function getSchoolHolidays(country: string, year: number) {
+  const response = await fetch(`${API_BASE_URL}/holidays/school?country=${country}&year=${year}`);
+  if (!response.ok) throw new Error('Failed to fetch school breaks');
+  return response.json();
+}
