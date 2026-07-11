@@ -12,7 +12,8 @@ import {
   Modal,
   FlatList
 } from "react-native";
-import { Calendar, ChevronDown, Search, Globe, X, Compass } from "lucide-react-native";
+import { Calendar, ChevronDown, Search, Globe, X, Compass, PartyPopper } from "lucide-react-native";
+import { useHolidays } from "../api/useHolidays";
 import { colors, fonts, spacing } from "../theme/theme";
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
@@ -23,16 +24,54 @@ const COUNTRIES = [
   { code: 'JP', name: 'Japan', flag: '🇯🇵' },
   { code: 'SG', name: 'Singapore', flag: '🇸🇬' },
   { code: 'GB', name: 'United Kingdom', flag: '🇬🇧' },
-  { code: 'AL', name: 'Albania', flag: '🇦🇱'}
+  { code: 'AL', name: 'Albania', flag: '🇦🇱'},
+  { code: 'AT', name: 'Austria', flag: '🇦🇹'},
+  { code: 'BY', name: 'Belarus', flag: '🇧🇾'},
+  { code: 'BE', name: 'Belgium', flag: '🇧🇪'},
+  { code: 'BG', name: 'Bulgaria', flag: '🇧🇬'},
+  { code: 'HR', name: 'Croatia', flag: '🇭🇷'},
 ];
 
-// Mock data representing what your holiday API returns for the upcoming holiday calculation
-const SAMPLE_HOLIDAYS_PH = [
-  { date: '2026-08-21', name: 'Ninoy Aquino Day' },
-  { date: '2026-08-31', name: 'National Heroes Day' },
-  { date: '2026-11-01', name: 'All Saints\' Day' },
-  { date: '2026-12-25', name: 'Christmas Day' },
-];
+// export const SCHOOL_HOLIDAY_SUPPORTED = [
+//   'AL',
+//   'AD',
+//   'AT',
+//   'BY',
+//   'BE',
+//   'BG',
+//   'HR',
+//   'CZ',
+//   'EE',
+//   'FR',
+//   'DE',
+//   'HU',
+//   'IE',
+//   'IT',
+//   'LV',
+//   'LI',
+//   'LT',
+//   'LU',
+//   'MT',
+//   'MD',
+//   'MC',
+//   'ME',
+//   'MX',
+//   'NL',
+//   'MK',
+//   'NO',
+//   'PL',
+//   'PT',
+//   'RO',
+//   'SM',
+//   'RS',
+//   'SK',
+//   'SI',
+//   'ES',
+//   'SE',
+//   'CH',
+//   'UA',
+//   'VA',
+// ];
 
 export function HomeScreen({ navigation }: Props) {
     const [selectedCountry, setSelectedCountry] = useState(COUNTRIES[0]);
@@ -40,16 +79,26 @@ export function HomeScreen({ navigation }: Props) {
     const [modalVisible, setModalVisible] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
 
-    // Calculate the next upcoming holiday dynamically
+    // Hook up your real public holidays query directly to the dashboard framework
+    const { data: holidays } = useHolidays(selectedCountry.code, Number(year));
+
+    // Scan if TODAY is a holiday
+    const todaysHoliday = useMemo(() => {
+        if (!holidays) return null;
+        return holidays.find((h: any) => h.isToday === true);
+    }, [holidays]);
+
+    // Otherwise calculate the next upcoming getaway countdown
     const nextHolidayInfo = useMemo(() => {
+        if (!holidays || todaysHoliday) return null;
+        
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        // In production, you'd pull this from your cached/stored useHolidays hook data
-        const upcoming = SAMPLE_HOLIDAYS_PH
-            .map(h => ({ ...h, dateObj: new Date(h.date) }))
-            .filter(h => h.dateObj >= today)
-            .sort((a, b) => a.dateObj.getTime() - b.dateObj.getTime())[0];
+        const upcoming = holidays
+            .map((h: any) => ({ ...h, dateObj: new Date(h.date) }))
+            .filter((h: any) => h.dateObj >= today)
+            .sort((a: any, b: any) => a.dateObj.getTime() - b.dateObj.getTime())[0];
 
         if (!upcoming) return null;
 
@@ -61,7 +110,7 @@ export function HomeScreen({ navigation }: Props) {
             daysLeft: daysLeft,
             formattedDate: upcoming.dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
         };
-    }, [selectedCountry]);
+    }, [holidays, todaysHoliday]);
 
     const filteredCountries = COUNTRIES.filter(c => 
         c.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -83,8 +132,21 @@ export function HomeScreen({ navigation }: Props) {
                 <Text style={styles.subtitleText}>Track celebrations and perfect your next getaway.</Text>
             </View>
 
-            {/* NEW: Next Holiday Countdown Hero Card */}
-            {nextHolidayInfo && (
+            {/* DYNAMIC HEADER ZONE */}
+            {/* Condition A: It is a holiday today! Display Celebratory Greeting Card */}
+            {todaysHoliday ? (
+                <View style={styles.celebrationCard}>
+                    <View style={styles.heroHeader}>
+                        <PartyPopper size={18} color={colors.ember} />
+                        <Text style={styles.celebrationTag}>HAPPENING TODAY</Text>
+                    </View>
+                    <Text style={styles.celebrationHolidayName}>Happy {todaysHoliday.name}! 🎉</Text>
+                    <Text style={styles.celebrationSubtitle}>
+                        Enjoy your hard-earned day off! Have a safe and relaxing trip to the province.
+                    </Text>
+                </View>
+            ) : nextHolidayInfo ? (
+                /* Condition B: Default State — Display Standard Getaway Countdown Hero Card */
                 <View style={styles.heroCard}>
                     <View style={styles.heroHeader}>
                         <Compass size={16} color={colors.forest} />
@@ -95,9 +157,9 @@ export function HomeScreen({ navigation }: Props) {
                         🏷️ Only <Text style={styles.heroDaysEmphasis}>{nextHolidayInfo.daysLeft}</Text> days to go! ({nextHolidayInfo.formattedDate})
                     </Text>
                 </View>
-            )}
+            ) : null}
 
-            {/* Inputs Card */}
+            {/* Main Selection Card UI */}
             <View style={styles.card}>
                 <View style={styles.inputGroup}>
                     <Text style={styles.label}>Country</Text>
@@ -134,7 +196,7 @@ export function HomeScreen({ navigation }: Props) {
                 </TouchableOpacity>
             </View>
 
-            {/* Modal remains the same */}
+            {/* Country Picker Selection Modal Component */}
             <Modal animationType="slide" transparent={true} visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
@@ -170,7 +232,35 @@ const styles = StyleSheet.create({
     titleText: { fontFamily: fonts.display, fontSize: 32, color: colors.ink, marginBottom: spacing.xs },
     subtitleText: { fontFamily: fonts.body, fontSize: 15, color: colors.mute, lineHeight: 22 },
     
-    // Hero Card Styling matching your warm editorial look
+    // Condition A Style Matrix: Dynamic Vibrant Festive Greeting Banner
+    celebrationCard: {
+        backgroundColor: colors.emberSoft,
+        borderRadius: 16,
+        padding: spacing.md * 1.25,
+        marginBottom: spacing.lg,
+        borderWidth: 1,
+        borderColor: '#F5C6C1',
+    },
+    celebrationTag: {
+        fontFamily: fonts.mono,
+        fontSize: 11,
+        color: colors.ember,
+        letterSpacing: 1,
+    },
+    celebrationHolidayName: {
+        fontFamily: fonts.display,
+        fontSize: 22,
+        color: colors.ink,
+        marginBottom: spacing.xs,
+    },
+    celebrationSubtitle: {
+        fontFamily: fonts.body,
+        fontSize: 14,
+        color: colors.ink,
+        lineHeight: 20,
+    },
+
+    // Condition B Style Matrix: Getaway Countdown Banner
     heroCard: {
         backgroundColor: colors.forestSoft,
         borderRadius: 16,
@@ -179,33 +269,11 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#D4E2D1',
     },
-    heroHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: spacing.xs,
-        marginBottom: spacing.xs,
-    },
-    heroTag: {
-        fontFamily: fonts.mono,
-        fontSize: 11,
-        color: colors.forest,
-        letterSpacing: 1,
-    },
-    heroHolidayName: {
-        fontFamily: fonts.display,
-        fontSize: 22,
-        color: colors.ink,
-        marginBottom: spacing.xs,
-    },
-    heroCountdownText: {
-        fontFamily: fonts.body,
-        fontSize: 14,
-        color: colors.ink,
-    },
-    heroDaysEmphasis: {
-        fontFamily: fonts.bodyBold,
-        color: colors.forest,
-    },
+    heroHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, marginBottom: spacing.xs },
+    heroTag: { fontFamily: fonts.mono, fontSize: 11, color: colors.forest, letterSpacing: 1 },
+    heroHolidayName: { fontFamily: fonts.display, fontSize: 22, color: colors.ink, marginBottom: spacing.xs },
+    heroCountdownText: { fontFamily: fonts.body, fontSize: 14, color: colors.ink },
+    heroDaysEmphasis: { fontFamily: fonts.bodyBold, color: colors.forest },
 
     card: { backgroundColor: colors.white, borderRadius: 16, padding: spacing.lg, borderWidth: 1, borderColor: colors.paperDim },
     inputGroup: { marginBottom: spacing.md },
