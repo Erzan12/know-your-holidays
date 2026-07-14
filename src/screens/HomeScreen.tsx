@@ -15,66 +15,13 @@ import {
 import { Calendar, ChevronDown, Search, Globe, X, Compass, PartyPopper } from "lucide-react-native";
 import { useHolidays } from "../api/useHolidays";
 import { colors, fonts, spacing } from "../theme/theme";
+import { COUNTRIES, REGIONS } from "../constants/countries";
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
-const COUNTRIES = [
-  { code: 'PH', name: 'Philippines', flag: '🇵🇭' },
-  { code: 'US', name: 'United States', flag: '🇺🇸' },
-  { code: 'JP', name: 'Japan', flag: '🇯🇵' },
-  { code: 'SG', name: 'Singapore', flag: '🇸🇬' },
-  { code: 'GB', name: 'United Kingdom', flag: '🇬🇧' },
-  { code: 'AL', name: 'Albania', flag: '🇦🇱'},
-  { code: 'AT', name: 'Austria', flag: '🇦🇹'},
-  { code: 'BY', name: 'Belarus', flag: '🇧🇾'},
-  { code: 'BE', name: 'Belgium', flag: '🇧🇪'},
-  { code: 'BG', name: 'Bulgaria', flag: '🇧🇬'},
-  { code: 'HR', name: 'Croatia', flag: '🇭🇷'},
-];
-
-// export const SCHOOL_HOLIDAY_SUPPORTED = [
-//   'AL',
-//   'AD',
-//   'AT',
-//   'BY',
-//   'BE',
-//   'BG',
-//   'HR',
-//   'CZ',
-//   'EE',
-//   'FR',
-//   'DE',
-//   'HU',
-//   'IE',
-//   'IT',
-//   'LV',
-//   'LI',
-//   'LT',
-//   'LU',
-//   'MT',
-//   'MD',
-//   'MC',
-//   'ME',
-//   'MX',
-//   'NL',
-//   'MK',
-//   'NO',
-//   'PL',
-//   'PT',
-//   'RO',
-//   'SM',
-//   'RS',
-//   'SK',
-//   'SI',
-//   'ES',
-//   'SE',
-//   'CH',
-//   'UA',
-//   'VA',
-// ];
-
 export function HomeScreen({ navigation }: Props) {
     const [selectedCountry, setSelectedCountry] = useState(COUNTRIES[0]);
+    const [selectedRegion, setSelectedRegion] = useState('All'); // New State
     const [year, setYear] = useState(String(new Date().getFullYear()));
     const [modalVisible, setModalVisible] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
@@ -112,10 +59,15 @@ export function HomeScreen({ navigation }: Props) {
         };
     }, [holidays, todaysHoliday]);
 
-    const filteredCountries = COUNTRIES.filter(c => 
-        c.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        c.code.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    // Filter by BOTH active region and search term
+    const filteredCountries = useMemo(() => {
+        return COUNTRIES.filter(c => {
+            const matchesRegion = selectedRegion === 'All' || c.region === selectedRegion;
+            const matchesSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                                  c.code.toLowerCase().includes(searchQuery.toLowerCase());
+            return matchesRegion && matchesSearch;
+        });
+    }, [selectedRegion, searchQuery]);
 
     const handleSelectCountry = (countryObj: typeof COUNTRIES[0]) => {
         setSelectedCountry(countryObj);
@@ -202,12 +154,31 @@ export function HomeScreen({ navigation }: Props) {
                     <View style={styles.modalContent}>
                         <View style={styles.modalHeader}>
                             <Text style={styles.modalTitle}>Select Country</Text>
-                            <TouchableOpacity onPress={() => setModalVisible(false)}><X size={24} color={colors.ink} /></TouchableOpacity>
+                            <TouchableOpacity onPress={() => setModalVisible(false)}>
+                                <X size={24} color={colors.ink} />
+                            </TouchableOpacity>
                         </View>
+                        
                         <View style={styles.searchBarWrapper}>
                             <Search size={18} color={colors.mute} style={styles.searchIcon} />
                             <TextInput style={styles.searchBar} placeholder="Search..." value={searchQuery} onChangeText={setSearchQuery} />
                         </View>
+
+                        {/* NEW: Region selector pills inside modal */}
+                        <View style={styles.regionTabs}>
+                            {REGIONS.map((r) => (
+                                <TouchableOpacity 
+                                    key={r} 
+                                    style={[styles.regionTab, selectedRegion === r && styles.activeRegionTab]} 
+                                    onPress={() => setSelectedRegion(r)}
+                                >
+                                    <Text style={[styles.regionTabText, selectedRegion === r && styles.activeRegionTabText]}>
+                                        {r}
+                                    </Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+
                         <FlatList
                             data={filteredCountries}
                             keyExtractor={(item) => item.code}
@@ -258,6 +229,34 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: colors.ink,
         lineHeight: 20,
+    },
+
+    regionTabs: { 
+        flexDirection: 'row', 
+        paddingHorizontal: spacing.lg, 
+        marginBottom: spacing.md, 
+        gap: spacing.xs 
+    },
+    regionTab: { 
+        paddingVertical: spacing.sm, 
+        paddingHorizontal: spacing.md, 
+        borderRadius: 20, 
+        backgroundColor: colors.paper,
+        borderWidth: 1,
+        borderColor: colors.paperDim,
+    },
+    activeRegionTab: { 
+        backgroundColor: colors.forest, 
+        borderColor: colors.forest 
+    },
+    regionTabText: { 
+        fontFamily: fonts.body, 
+        fontSize: 13, 
+        color: colors.mute 
+    },
+    activeRegionTabText: { 
+        fontFamily: fonts.bodyBold, 
+        color: colors.white 
     },
 
     // Condition B Style Matrix: Getaway Countdown Banner
