@@ -4,7 +4,7 @@
     "slug": "know-your-holidays",
     "version": "1.0.3",
     "orientation": "portrait",
-    "icon": "./assets/know-your-holidays-app-icon.png",
+    "icon": "./assets/images/know-your-holidays-app-icon.png",
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true
