@@ -12,7 +12,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 export function RootNavigator() {
     return (
         <Stack.Navigator>
-            <Stack.Screen name ="Home" component={HomeScreen} options={{ title: 'Know Your Holidays' }} />
+            <Stack.Screen name ="Home" component={HomeScreen} options={{ title: 'Home' }} />
             <Stack.Screen name="HolidayList" component={HolidayListScreen} options={{ title: 'Holidays' }} />
         </Stack.Navigator>
     )
