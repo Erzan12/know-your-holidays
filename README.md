@@ -79,10 +79,9 @@ npm install
 
 # Start the Expo developer bundle
 npx expo start
-
+```
 ```text
 Note for Physical Devices/Emulators: Update API_BASE_URL inside frontend/src/api/holidays.ts to point to your local machine IP address instead of localhost.
-```
 ```
 
 ---
