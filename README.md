@@ -100,3 +100,8 @@ Here is the planned direction for future version releases:
 
 ## 📄 License
 Distributed under the MIT License. See LICENSE for more information.
+
+### 👤 Author
+**Erzan**
+* **GitHub: https://github.com/Erzan12**
+* **Portfolio: https://erzan-dev.vercel.app/**
