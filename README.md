@@ -88,3 +88,15 @@ Note for Physical Devices/Emulators: Update API_BASE_URL inside frontend/src/api
 Here is the planned direction for future version releases:
 
 ### 🔮 v1.1.0 — Smart Travel & Leave Planner
+* **Leave Optimizer ("Bridge Day" Engine):** Automatically suggest which single workdays to file for vacation to maximize consecutive days off (e.g., "File 1 day leave on Friday to get a 4-day long weekend").
+* **Calendar Sync (iCal / Google Calendar / Apple Calendar):** One-tap button to export selected holidays directly into the user's native phone calendar.
+### 🔔 v1.2.0 — Push Notifications & Reminders
+* **Getaway Reminders:** Local background push notifications 7 days and 3 days before an upcoming long weekend.
+* **Custom Flight/Hotel Booking Alerts:** Configurable reminders prompting users to book accommodation before holiday surge pricing kicks in.
+### 🌐 v2.0.0 — Community & Multi-Region Customization
+* **State/Province-Level Filtering:** Support regional and state-level holidays for multi-jurisdiction countries (e.g., US states, Australian territories, PH local city holidays).
+* **Multi-Language Localization (i18n):** Full localization support for native language translations across Europe and Asia.
+* **User Accounts & Favorite Destinations:** Allow users to bookmark multiple countries (e.g., home country vs. target vacation destination) for side-by-side comparison.
+
+## 📄 License
+Distributed under the MIT License. See LICENSE for more information.
